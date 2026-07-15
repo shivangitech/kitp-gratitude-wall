@@ -122,32 +122,130 @@
                         <p class="text-lg text-gray-700 leading-relaxed max-w-2xl mx-auto">
                             This Single Page Application was created by a dedicated <strong class="text-blue-800">BCA student</strong> as part of a final project. Its purpose is to provide a dedicated space for the past and present community of Kanpur Institute of Technology and Pharmacy (KITP) to share appreciation (gratitude) and campus stories, fostering nostalgia and lasting connections.
                         </p>
-                        <p class="text-md text-gray-500 mt-8">Made with ❤️ by a BCA Student, Batch of 2024</p>
+                        <p class="text-md text-gray-500 mt-8">Made with ❤️ by a BCA Student, Batch of 2027</p>
                     </div>
                 `;
             }
         };
 
-        // SPA Navigation Logic
-        const mainContent = document.getElementById('main-content');
-        const navLinks = document.querySelectorAll('nav a');
+        // Data sources (Temporary storage - page refresh hone par reset ho jayega)
+const gratitudeData = [
+    { recipient: "HOD BCA Sir", message: "Thank you for always guiding us, especially during the project phase. Your mentorship means a lot!", sender: "Raman (Batch '24)" },
+    { recipient: "Canteen Bhaiya", message: "Shukriya unlimited chai ke liye exam prep ke dauraan!", sender: "Anonymous" },
+    { recipient: "Physics Dept", message: "The lab practicals were challenging but so rewarding! Thanks to all the professors.", sender: "Anjali" },
+    { recipient: "Verma Sir", message: "Class of 2023 says thank you! Your Java lectures were unforgettable.", sender: "Vikram S." }
+];
 
-        function navigate(hash) {
-            // Remove '#' from hash to get page name
-            const pageName = hash.replace('#', '') || 'wall'; // default page
+// Content generation functions for each page (view)
+const pages = {
+    'wall': () => {
+        let html = `
+            <div class="flex justify-between items-center mb-10">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-900 flex items-center gap-3">
+                    <span class="text-3xl">💖</span>
+                    The Gratitude Wall
+                </h1>
+                <!-- Yahan onclick="toggleModal()" add kiya hai taaki form khul sake -->
+                <button onclick="toggleModal()" class="bg-yellow-400 text-blue-950 px-6 py-3 font-bold rounded-full shadow-lg hover:scale-105 transition">
+                    + Share a Note
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="message-grid">
+        `;
+        gratitudeData.forEach(item => {
+            html += `
+                <div class="bg-white p-7 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition">
+                    <p class="text-gray-700 italic text-base leading-relaxed mb-6">"${item.message}"</p>
+                    <div class="flex justify-between items-center text-xs font-semibold tracking-wide">
+                        <span class="text-blue-800 bg-blue-100 px-3 py-1 rounded-full">To: ${item.recipient}</span>
+                        <span class="text-gray-600">- By ${item.sender}</span>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+        return html;
+    },
+    'stories': () => {
+        return `
+            <h1 class="text-4xl font-extrabold text-blue-900 mb-10">Campus Stories: Life at KITP</h1>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex gap-6 items-center">
+                    <img src="https://via.placeholder.com/120x120?text=Library" alt="Library" class="h-24 w-24 rounded-full">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Quiet Library Moments</h3>
+                        <p class="text-sm text-gray-600 mt-2">A story about finding peace and focused study among the shelves of the KITP central library.</p>
+                        <a href="#" class="text-blue-600 font-medium text-sm mt-3 inline-block">Read More →</a>
+                    </div>
+                </div>
+                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex gap-6 items-center">
+                    <img src="https://via.placeholder.com/120x120?text=Canteen" alt="Canteen" class="h-24 w-24 rounded-full">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">The Canteen Diaries</h3>
+                        <p class="text-sm text-gray-600 mt-2">Reliving the laughter, friendships, and the iconic cutting chai moments at the college canteen.</p>
+                        <a href="#" class="text-blue-600 font-medium text-sm mt-3 inline-block">Read More →</a>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    'about': () => {
+        return `
+            <div class="bg-white p-12 rounded-3xl shadow-xl max-w-4xl mx-auto border border-gray-50 text-center">
+                <img src="image_0.png" alt="KITP Logo" class="h-24 w-auto mx-auto mb-8">
+                <h1 class="text-4xl font-bold text-blue-950 mb-6">About this Community Hub</h1>
+                <p class="text-lg text-gray-700 leading-relaxed max-w-2xl mx-auto">
+                    This Single Page Application was created by a dedicated <strong class="text-blue-800">BCA student</strong> as part of a final project. Its purpose is to provide a dedicated space for the past and present community of Kanpur Institute of Technology and Pharmacy (KITP) to share appreciation (gratitude) and campus stories, fostering nostalgia and lasting connections.
+                </p>
+                <p class="text-md text-gray-500 mt-8">Made with ❤️ by a BCA Student, Batch of 2024</p>
+            </div>
+        `;
+    }
+};
 
-            // Update content area
-            mainContent.innerHTML = pages[pageName]();
+// Function to toggle submit popup modal
+function toggleModal() {
+    const modal = document.getElementById('messageModal');
+    modal.classList.toggle('hidden');
+}
 
-            // Set active link style
-            navLinks.forEach(link => link.classList.remove('text-blue-700'));
-            const activeLink = Array.from(navLinks).find(link => link.getAttribute('href') === hash);
-            if (activeLink) activeLink.classList.add('text-blue-700');
-        }
+// Handle Form Submit
+function submitMessage(event) {
+    event.preventDefault(); // Page refresh hone se roko
+    
+    const recipient = document.getElementById('recipient').value;
+    const message = document.getElementById('message').value;
+    const sender = document.getElementById('sender').value || 'Anonymous';
 
-        // Handle initial load and browser back button
-        window.addEventListener('hashchange', () => navigate(window.location.hash));
-        window.addEventListener('load', () => navigate(window.location.hash || '#wall'));
+    // Naye message ko humari local array me unshift (sabse upar) push karo
+    gratitudeData.unshift({ recipient, message, sender });
+
+    // Dobara page load kar do taaki naya message screen par dikhne lage
+    navigate(window.location.hash || '#wall');
+
+    // Form clear karo aur modal band karo
+    document.getElementById('gratitudeForm').reset();
+    toggleModal();
+}
+
+// SPA Navigation Logic
+const mainContent = document.getElementById('main-content');
+const navLinks = document.querySelectorAll('nav a');
+
+function navigate(hash) {
+    const pageName = hash.replace('#', '') || 'wall'; // default page
+    mainContent.innerHTML = pages[pageName]();
+
+    // Set active link style
+    navLinks.forEach(link => link.classList.remove('text-blue-700'));
+    const activeLink = Array.from(navLinks).find(link => link.getAttribute('href') === hash);
+    if (activeLink) activeLink.classList.add('text-blue-700');
+}
+
+// Handle initial load and browser back button
+window.addEventListener('hashchange', () => navigate(window.location.hash));
+window.addEventListener('load', () => navigate(window.location.hash || '#wall'));
+
     </script>
 </body>
 </html>
